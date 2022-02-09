@@ -91,6 +91,5 @@ def import_prospects_file(
             continue
 
         email = row[email_index]
-        print(i, email)
 
     return {"message": "hello world"}
