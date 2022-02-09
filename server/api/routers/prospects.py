@@ -59,8 +59,6 @@ def import_prospects_file(
     #         status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in"
     #     )
 
-    print(f"{file.filename}")
-
     # Holds the different indexes. Will be used to find duplicates.
     indexes = [email_index]
 
@@ -93,7 +91,6 @@ def import_prospects_file(
             continue
 
         email = row[email_index]
-        
-        print(i, row[email_index])
+        print(i, email)
 
     return {"message": "hello world"}
