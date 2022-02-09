@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile
 from sqlalchemy.orm.session import Session
 from api import schemas
 from api.dependencies.auth import get_current_user
-from api.core.constants import DEFAULT_PAGE, DEFAULT_PAGE_SIZE
+from api.core.constants import DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_IMPORT_FILE_SIZE
 from api.crud import ProspectCrud
 from api.dependencies.db import get_db
 import csv
@@ -82,7 +82,16 @@ def import_prospects_file(
         )
 
     # Decode file into a CSV reader object.
-    csv_reader = csv.reader(codecs.iterdecode(file.file, "utf-8"))
+    csv_file = codecs.iterdecode(file.file, "utf-8")
+    csv_reader = csv.reader(csv_file)
+
+    # Check file size does not exceed 200 MB.
+    for i, row in enumerate(csv_reader):
+        file_size_bytes = file.file.tell()
+        if file_size_bytes > MAX_IMPORT_FILE_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"File size cannot exceed {MAX_IMPORT_FILE_SIZE} bytes"
+            )
 
     # Time to rock and roll... parse the CSV.
     for i, row in enumerate(csv_reader):
