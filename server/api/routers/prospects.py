@@ -78,7 +78,7 @@ def import_prospects_file(
     # Check if any of the indexes are less than zero.
     if any(idx < 0 for idx in indexes):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Indexes must be above 0"
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Indexes cannot be below 0"
         )
 
     # Decode file into a CSV reader object.
