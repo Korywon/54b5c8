@@ -64,10 +64,8 @@ def import_prospects_file(
     indexes = [email_index]
 
     # Only add indexes if they are not the default.
-    if first_name_index:
     if first_name_index != None:
         indexes.append(first_name_index)
-    if last_name_index:
     if last_name_index != None:
         indexes.append(last_name_index)
 
