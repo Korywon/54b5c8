@@ -43,9 +43,27 @@ class ProspectCrud:
         return prospect
 
     @classmethod
-    def prospect_exists(cls, db: Session, email: str) -> Prospect:
+    def update_prospect(cls, db: Session, user_id: int, data: schemas.ProspectCreate):
+        res = (
+            db.query(Prospect)
+            .filter(Prospect.email == data["email"])
+            .filter(Prospect.user_id == user_id)
+            .first()
+        )
+
+        res.first_name = data["first_name"]
+        res.last_name = data["last_name"]
+
+        db.commit()
+
+    @classmethod
+    def prospect_exists(cls, db: Session, user_id: int, email: str) -> Prospect:
         """Get a prospect"""
-        res = db.query(Prospect).filter(Prospect.email == email)
+        res = (
+            db.query(Prospect)
+            .filter(Prospect.user_id == user_id)
+            .filter(Prospect.email == email)
+        )
 
         return res.count() > 0
 

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile
 from sqlalchemy.orm.session import Session
+from pydantic.networks import EmailStr
 from api import schemas
 from api.dependencies.auth import get_current_user
 from api.core.constants import DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_IMPORT_FILE_SIZE
@@ -101,6 +102,14 @@ def import_prospects_file(
             detail=f"File size cannot exceed {MAX_IMPORT_FILE_SIZE} bytes",
         )
 
+    # Response payload describing summary of the import.
+    summary = {
+        "total": num_rows,
+        "skipped": 0,
+        "created": 0,
+        "updated": 0,
+    }
+
     # Time to rock and roll... parse the CSV.
     for i, row in enumerate(csv_rows):
         # Skip header row.
@@ -110,26 +119,51 @@ def import_prospects_file(
         # Skip any rows if the indexes are out of range.
         num_col = len(row)
         if any(idx >= num_col for idx in indexes):
-            # TODO: Add to skipped.
-            print("skipped...")
+            print(f"{i}/{num_rows} SKIPPED")
+            summary["skipped"] += 1
             continue
 
-        email = row[email_index]
+        email = ""
         first_name = ""
         last_name = ""
 
+        # TODO: This validation logic doesn't work! Fix it.
+        try:
+            email = EmailStr(row[email_index])
+        except:
+            summary["skipped"] += 1
+            continue
+
+        # Grab first and last name if we were given indexes.
         if first_name_index != None:
             first_name = row[first_name_index]
         if last_name_index != None:
             last_name = row[last_name_index]
 
-        # Only create prospects when forcing or if the prospect doesn't exist.
-        if force or not ProspectCrud.prospect_exists(db, email):
-            print(f"creating prospect {email}")
-            # TODO: create a prospect and shove it into database
-        else:
-            print(f"skipped prospect {email}")
-            # TODO: add skipped number
-        # print(f"{i}/{num_rows} {email} {first_name} {last_name}")
+        prospect = {
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
 
-    return {"message": "hello world"}
+        # TODO: Debug prints. Remove this.
+        # print(f"{i}/{num_rows} {email} {first_name} {last_name}", end=" ")
+
+        exists = ProspectCrud.prospect_exists(db, 1, email)
+
+        # Only update if forcing and entry exists.
+        # TODO: Remove debug prints.
+        if force and exists:
+            # print(f"UPDATED")
+            ProspectCrud.update_prospect(db, 1, prospect)
+            summary["updated"] += 1
+        # Only create prospects if we don't have an existing prospect.
+        elif not exists:
+            # print(f"CREATED")
+            ProspectCrud.create_prospect(db, 1, prospect)
+            summary["created"] += 1
+        else:
+            # print(f"SKIPPED")
+            summary["skipped"] += 1
+
+    return summary
