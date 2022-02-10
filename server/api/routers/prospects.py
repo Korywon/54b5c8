@@ -120,6 +120,13 @@ def import_prospects_file(
             first_name = row[first_name_index]
         if last_name_index != None:
             last_name = row[last_name_index]
-        print(f"{i}/{num_rows} {email} {first_name} {last_name}")
+
+        if force or not ProspectCrud.prospect_exists(db, "prospect00@mail.com"):
+            print(f'creating prospect {email}')
+            # TODO: create a prospect and shove it into database
+        else:
+            print(f'skipped prospect {email}')
+            # TODO: add skipped number
+        # print(f"{i}/{num_rows} {email} {first_name} {last_name}")
 
     return {"message": "hello world"}
