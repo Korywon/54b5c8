@@ -7,6 +7,7 @@ from api.crud import ProspectCrud
 from api.dependencies.db import get_db
 import csv
 import codecs
+import os
 
 router = APIRouter(prefix="/api", tags=["prospects", "prospects_files"])
 
@@ -87,13 +88,17 @@ def import_prospects_file(
     csv_file = codecs.iterdecode(file.file, "utf-8")
     csv_reader = csv.reader(csv_file)
 
-    # Check file size does not exceed 200 MB.
-    for i, row in enumerate(csv_reader):
-        file_size_bytes = file.file.tell()
-        if file_size_bytes > MAX_IMPORT_FILE_SIZE:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"File size cannot exceed {MAX_IMPORT_FILE_SIZE} bytes"
-            )
+    # Go to the end of the file and get the file size.
+    file.file.seek(0, os.SEEK_END)
+    file_size_bytes = file.file.tell()
+    file.file.seek(0)
+
+    # Check file size does not exceed the max file size.
+    if file_size_bytes > MAX_IMPORT_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"File size cannot exceed {MAX_IMPORT_FILE_SIZE} bytes"
+        )
 
     # Time to rock and roll... parse the CSV.
     for i, row in enumerate(csv_reader):
