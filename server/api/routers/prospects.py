@@ -72,13 +72,15 @@ def import_prospects_file(
     # are not the same, that indicates we have duplicates.
     if len(indexes) != len(set(indexes)):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Indexes cannot be the same"
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Indexes cannot be the same"
         )
 
     # Check if any of the indexes are less than zero.
     if any(idx < 0 for idx in indexes):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Indexes cannot be below 0"
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Indexes cannot be below 0"
         )
 
     # Decode file into a CSV reader object.
