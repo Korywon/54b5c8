@@ -45,10 +45,7 @@ class ProspectCrud:
     @classmethod
     def prospect_exists(cls, db: Session, email: str) -> Prospect:
         """Get a prospect"""
-        res = (
-            db.query(Prospect)
-            .filter(Prospect.email == email)
-        )
+        res = db.query(Prospect).filter(Prospect.email == email)
 
         return res.count() > 0
 
