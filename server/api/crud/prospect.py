@@ -43,12 +43,11 @@ class ProspectCrud:
         return prospect
 
     @classmethod
-    def prospect_exists(cls, db: Session, user_id: int, email: str) -> Prospect:
+    def prospect_exists(cls, db: Session, email: str) -> Prospect:
         """Get a prospect"""
         res = (
             db.query(Prospect)
             .filter(Prospect.email == email)
-            .filter(Prospect.user_id == user_id)
         )
 
         return res.count() > 0

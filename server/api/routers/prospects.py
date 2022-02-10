@@ -104,7 +104,7 @@ def import_prospects_file(
     # TODO: Check to make sure that the indexes do not exceed the columns.
 
     # TODO: This is a test of the prospect_exists() function.
-    # print(ProspectCrud.prospect_exists(db, 1, "prospect00@mail.com"))
+    # print(ProspectCrud.prospect_exists(db, "prospect00@mail.com"))
 
     # Time to rock and roll... parse the CSV.
     for i, row in enumerate(csv_rows):
