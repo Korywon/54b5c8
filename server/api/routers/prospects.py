@@ -107,6 +107,13 @@ def import_prospects_file(
         if not i and has_headers:
             continue
 
+        # Skip any rows if the indexes are out of range.
+        num_col = len(row)
+        if any(idx >= num_col for idx in indexes):
+            # TODO: Add to skipped.
+            print("skipped...")
+            continue
+
         email = row[email_index]
         first_name = ""
         last_name = ""
