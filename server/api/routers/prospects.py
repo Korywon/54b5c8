@@ -110,5 +110,14 @@ def import_prospects_file(
             continue
 
         email = row[email_index]
+        first_name = ""
+        last_name = ""
+
+        if first_name_index != None:
+            first_name = row[first_name_index]
+        if last_name_index != None:
+            last_name = row[last_name_index]
+        print(f"{i}/{num_rows} {email} {first_name} {last_name}")
+
 
     return {"message": "hello world"}
