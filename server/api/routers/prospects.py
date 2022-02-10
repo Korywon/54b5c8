@@ -86,13 +86,13 @@ def import_prospects_file(
         )
 
     # Decode file into a CSV reader object.
-    csv_file = codecs.iterdecode(file.file, "utf-8")
-    csv_reader = csv.reader(csv_file)
+    csv_file = csv.reader(codecs.iterdecode(file.file, "utf-8"))
+    csv_rows = list(csv_file)
+    num_rows = len(csv_rows) - int(has_headers)
 
     # Go to the end of the file and get the file size.
     file.file.seek(0, os.SEEK_END)
     file_size_bytes = file.file.tell()
-    file.file.seek(0)
 
     # Check file size does not exceed the max file size.
     if file_size_bytes > MAX_IMPORT_FILE_SIZE:
@@ -104,7 +104,7 @@ def import_prospects_file(
     # TODO: Check to make sure that the indexes do not exceed the columns.
 
     # Time to rock and roll... parse the CSV.
-    for i, row in enumerate(csv_reader):
+    for i, row in enumerate(csv_rows):
         # Skip header row.
         if not i and has_headers:
             continue
