@@ -75,14 +75,14 @@ def import_prospects_file(
     if len(indexes) != len(set(indexes)):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Indexes cannot be the same"
+            detail="Indexes cannot be the same",
         )
 
     # Check if any of the indexes are less than zero.
     if any(idx < 0 for idx in indexes):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Indexes cannot be below 0"
+            detail="Indexes cannot be below 0",
         )
 
     # Decode file into a CSV reader object.
@@ -98,7 +98,7 @@ def import_prospects_file(
     if file_size_bytes > MAX_IMPORT_FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"File size cannot exceed {MAX_IMPORT_FILE_SIZE} bytes"
+            detail=f"File size cannot exceed {MAX_IMPORT_FILE_SIZE} bytes",
         )
 
     # TODO: Check to make sure that the indexes do not exceed the columns.
@@ -121,6 +121,5 @@ def import_prospects_file(
         if last_name_index != None:
             last_name = row[last_name_index]
         print(f"{i}/{num_rows} {email} {first_name} {last_name}")
-
 
     return {"message": "hello world"}
