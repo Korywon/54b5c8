@@ -55,6 +55,7 @@ def import_prospects_file(
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    # TODO: Commented out for debugging. Uncomment this.
     # if not current_user:
     #     raise HTTPException(
     #         status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in"
@@ -69,8 +70,8 @@ def import_prospects_file(
     if last_name_index != None:
         indexes.append(last_name_index)
 
-    # The set of indexes should be the same as the list of indexes. If they
-    # are not the same, that indicates we have duplicates.
+    # The set of indexes should be the same as the list of indexes. If they are
+    # not the same, that indicates we have duplicates.
     if len(indexes) != len(set(indexes)):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -99,6 +100,8 @@ def import_prospects_file(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"File size cannot exceed {MAX_IMPORT_FILE_SIZE} bytes"
         )
+
+    # TODO: Check to make sure that the indexes do not exceed the columns.
 
     # Time to rock and roll... parse the CSV.
     for i, row in enumerate(csv_reader):
