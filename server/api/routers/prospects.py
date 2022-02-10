@@ -101,11 +101,6 @@ def import_prospects_file(
             detail=f"File size cannot exceed {MAX_IMPORT_FILE_SIZE} bytes",
         )
 
-    # TODO: Check to make sure that the indexes do not exceed the columns.
-
-    # TODO: This is a test of the prospect_exists() function.
-    # print(ProspectCrud.prospect_exists(db, "prospect00@mail.com"))
-
     # Time to rock and roll... parse the CSV.
     for i, row in enumerate(csv_rows):
         # Skip header row.
@@ -121,7 +116,8 @@ def import_prospects_file(
         if last_name_index != None:
             last_name = row[last_name_index]
 
-        if force or not ProspectCrud.prospect_exists(db, "prospect00@mail.com"):
+        # Only create prospects when forcing or if the prospect doesn't exist.
+        if force or not ProspectCrud.prospect_exists(db, email):
             print(f"creating prospect {email}")
             # TODO: create a prospect and shove it into database
         else:
