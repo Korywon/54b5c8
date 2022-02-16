@@ -30,7 +30,7 @@ class FileCrud:
             db.query(File)
             .filter(File.user_id == user_id)
             .filter(File.id == file_id)
-            .first()
+            .one_or_none()
         )
 
     @classmethod

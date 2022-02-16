@@ -44,6 +44,11 @@ def get_prospects_file_progress(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in"
         )
     progress = FileCrud.get_file_progress(db, current_user.id, file_id)
+    if not progress:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="File progress not found"
+        )
+
     return progress
 
 
