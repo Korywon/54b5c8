@@ -3,7 +3,6 @@ fastapi
 bcrypt
 python-jose[cryptography]
 pydantic[email]
-email-validator
 sqlalchemy
 psycopg2-binary
 python-multipart
