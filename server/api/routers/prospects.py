@@ -131,7 +131,6 @@ async def import_prospects_file(
         # Skip any rows if the indexes are out of range.
         num_col = len(row)
         if any(idx >= num_col for idx in indexes):
-            print(f"{i}/{num_rows} SKIPPED")
             summary["skipped"] += 1
             continue
 
@@ -168,7 +167,6 @@ async def import_prospects_file(
             ProspectCrud.create_prospect(db, current_user.id, prospect)
             summary["created"] += 1
         else:
-            print(f"{i}/{num_rows} {email} {first_name} {last_name} SKIPPED")
             summary["skipped"] += 1
 
         # Update the rows done in the database.
