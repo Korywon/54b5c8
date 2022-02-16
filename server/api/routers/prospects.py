@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile
 from sqlalchemy.orm.session import Session
-from email_validator import validate_email, EmailNotValidError
 from api import schemas
 from api.dependencies.auth import get_current_user
 from api.core.constants import DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_IMPORT_FILE_SIZE
