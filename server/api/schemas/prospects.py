@@ -29,3 +29,10 @@ class ProspectResponse(BaseModel):
     prospects: List[Prospect]
     size: int
     total: int
+
+
+class ProspectImportResponse(BaseModel):
+    created: int
+    skipped: int
+    total: int
+    updated: int

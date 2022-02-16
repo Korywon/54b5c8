@@ -13,6 +13,7 @@ import re
 router = APIRouter(prefix="/api", tags=["prospects", "prospects_files"])
 email_pattern = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
 
+
 @router.get("/prospects", response_model=schemas.ProspectResponse)
 def get_prospects_page(
     current_user: schemas.User = Depends(get_current_user),
@@ -46,7 +47,7 @@ def get_prospects_file_progress(
     return progress
 
 
-@router.post("/prospect_files/import")
+@router.post("/prospect_files/import", response_model=schemas.ProspectImportResponse)
 def import_prospects_file(
     email_index: int,
     file: UploadFile,
