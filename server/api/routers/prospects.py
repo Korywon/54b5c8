@@ -129,6 +129,9 @@ async def import_prospects_file(
 
     # Time to rock and roll... parse the CSV.
     for i, row in enumerate(csv_rows):
+        # Update the rows done in the database.
+        FileCrud.update_file_progress(db, current_user.id, current_file.id)
+
         # Skip header row.
         if not i and has_headers:
             continue
@@ -173,9 +176,6 @@ async def import_prospects_file(
             summary["created"] += 1
         else:
             summary["skipped"] += 1
-
-        # Update the rows done in the database.
-        FileCrud.update_file_progress(db, current_user.id, current_file.id)
 
     # Update the finished date time of file.
     FileCrud.update_file_done_at(db, current_user.id, current_file.id)
