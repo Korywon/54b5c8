@@ -18,19 +18,6 @@ class FileCrud:
         db.refresh(file)
         return file
 
-    @classmethod
-    def get_file(
-        cls,
-        db: Session,
-        user_id: int,
-        file_id: int,
-    ) -> File:
-        return (
-            db.query(File)
-            .filter(File.user_id == user_id)
-            .filter(File.id == file_id)
-            .first()
-        )
 
     @classmethod
     def get_file(
