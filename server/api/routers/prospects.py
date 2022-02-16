@@ -34,7 +34,7 @@ def get_prospects_page(
 @router.get(
     "/prospects_files/{file_id}/progress", response_model=schemas.FileProgressResponse
 )
-def get_prospects_file_progress(
+async def get_prospects_file_progress(
     file_id: int,
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db),
