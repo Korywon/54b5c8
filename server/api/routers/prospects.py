@@ -30,7 +30,6 @@ def get_prospects_page(
     return {"prospects": prospects, "size": len(prospects), "total": total}
 
 
-# TODO: Get progress on the file.
 @router.get(
     "/prospects_files/{file_id}/progress", response_model=schemas.FileProgressResponse
 )
@@ -47,7 +46,6 @@ def get_prospects_file_progress(
     return progress
 
 
-# TODO: Parse, validate, and import prospects.
 @router.post("/prospect_files/import")
 def import_prospects_file(
     email_index: int,
