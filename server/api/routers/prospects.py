@@ -9,9 +9,10 @@ from api.dependencies.db import get_db
 import csv
 import codecs
 import os
+import re
 
 router = APIRouter(prefix="/api", tags=["prospects", "prospects_files"])
-
+email_pattern = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
 
 @router.get("/prospects", response_model=schemas.ProspectResponse)
 def get_prospects_page(
@@ -139,11 +140,8 @@ def import_prospects_file(
         last_name = ""
 
         # Attempt to validate the email.
-        try:
-            valid = validate_email(email)
-            email = valid.email
-        except EmailNotValidError as e:
-            print(f"{i}/{num_rows} SKIPPED")
+        if not email_pattern.match(email):
+            print(f"{i}/{num_rows} {email} SKIPPED (bad email)")
             summary["skipped"] += 1
             continue
 
