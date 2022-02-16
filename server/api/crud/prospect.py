@@ -1,7 +1,7 @@
 from typing import List, Set, Union
 from sqlalchemy.orm.session import Session
 from api import schemas
-from api.models import Prospect
+from api.models import File, Prospect
 from api.core.constants import DEFAULT_PAGE_SIZE, DEFAULT_PAGE, MIN_PAGE, MAX_PAGE_SIZE
 
 
@@ -57,15 +57,33 @@ class ProspectCrud:
         db.commit()
 
     @classmethod
-    def prospect_exists(cls, db: Session, user_id: int, email: str) -> Prospect:
+    def update_prospect_file(cls, db: Session, user_id: int, prospect_id: int, file_id: int):
+        prospect = (
+            db.query(Prospect)
+            .filter(Prospect.user_id == user_id)
+            .filter(Prospect.id == prospect_id)
+            .one_or_none()
+        )
+
+        file = (
+            db.query(File)
+            .filter(File.user_id == user_id)
+            .filter(File.id == file_id)
+            .one_or_none()
+        )
+
+        if prospect and file:
+            prospect.file_id = file_id
+
+    @classmethod
+    def get_user_prospect_email(cls, db: Session, user_id: int, email: str) -> Prospect:
         """Get a prospect"""
-        res = (
+        return (
             db.query(Prospect)
             .filter(Prospect.user_id == user_id)
             .filter(Prospect.email == email)
+            .one_or_none()
         )
-
-        return res.count() > 0
 
     @classmethod
     def validate_prospect_ids(

@@ -46,7 +46,7 @@ async def get_prospects_file_progress(
     progress = FileCrud.get_file_progress(db, current_user.id, file_id)
     if not progress:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="File progress not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
         )
 
     return progress
@@ -133,9 +133,6 @@ async def import_prospects_file(
         if not i and has_headers:
             continue
 
-        # Update the rows done in the database.
-        FileCrud.update_file_progress(db, current_user.id, current_file.id)
-
         # Skip any rows if the indexes are out of range.
         num_col = len(row)
         if any(idx >= num_col for idx in indexes):
@@ -158,24 +155,29 @@ async def import_prospects_file(
         if last_name_index != None:
             last_name = row[last_name_index]
 
-        prospect = {
+        # Holds new data for creating or updating a prospect.
+        prospect_data = {
             "email": email,
             "first_name": first_name,
             "last_name": last_name,
         }
 
-        exists = ProspectCrud.prospect_exists(db, current_user.id, email)
+        prospect_found = ProspectCrud.get_user_prospect_email(db, current_user.id, email)
 
         # Only update if forcing and entry exists.
         # Only create prospects if we don't have an existing prospect.
-        if force and exists:
-            ProspectCrud.update_prospect(db, current_user.id, prospect)
+        if force and prospect_found:
+            ProspectCrud.update_prospect(db, current_user.id, prospect_data)
             summary["updated"] += 1
-        elif not exists:
-            ProspectCrud.create_prospect(db, current_user.id, prospect)
+        elif not prospect_found:
+            prospect_found = ProspectCrud.create_prospect(db, current_user.id, prospect_data)
             summary["created"] += 1
         else:
+            print(f"{i}/{num_rows} {email} SKIPPED (nonexistent prospect)")
             summary["skipped"] += 1
+            continue
+
+        ProspectCrud.update_prospect_file(db, current_user.id, prospect_found.id, current_file.id)
 
     # Update the finished date time of file.
     FileCrud.update_file_done_at(db, current_user.id, current_file.id)

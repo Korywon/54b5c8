@@ -1,8 +1,9 @@
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import func
 from api import schemas
-from api.models import File
+from api.models import File, Prospect
 from typing import Union
+
 
 class FileCrud:
     @classmethod
@@ -17,7 +18,6 @@ class FileCrud:
         db.commit()
         db.refresh(file)
         return file
-
 
     @classmethod
     def get_file(
@@ -39,15 +39,15 @@ class FileCrud:
     ) -> Union[schemas.FileProgressResponse, None]:
         file = cls.get_file(db, user_id, file_id)
         if file:
-            return schemas.FileProgressResponse(total=file.total_rows, done=file.done_rows)
-        else:
-            None
+            done_rows = (
+                db.query(Prospect)
+                .filter(Prospect.user_id == user_id)
+                .filter(Prospect.file_id == file_id)
+                .count()
+            )
+            return schemas.FileProgressResponse(total=file.total_rows, done=done_rows)
 
-    @classmethod
-    def update_file_progress(cls, db: Session, user_id: int, file_id: int):
-        file = cls.get_file(db, user_id, file_id)
-        file.done_rows += 1
-        db.commit()
+        return None
 
     @classmethod
     def update_file_done_at(cls, db: Session, user_id: int, file_id: int):

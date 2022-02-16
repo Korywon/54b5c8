@@ -21,6 +21,7 @@ class File(Base):
     done_rows = Column(Integer, default=0)
 
     user = relationship("User", back_populates="files", foreign_keys=[user_id])
+    prospects = relationship("Prospect", back_populates="file")
 
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
     done_at = Column(DateTime(timezone=True), nullable=True)
