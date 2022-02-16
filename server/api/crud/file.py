@@ -47,6 +47,13 @@ class FileCrud:
         )
 
     @classmethod
+    def get_file_progress(
+        cls, db: Session, user_id: int, file_id: int
+    ) -> schemas.FileProgressResponse:
+        file = cls.get_file(db, user_id, file_id)
+        return {"total": file.total_rows, "done": file.done_rows}
+
+    @classmethod
     def update_file_progress(cls, db: Session, user_id: int, file_id: int):
         file = cls.get_file(db, user_id, file_id)
         file.done_rows += 1

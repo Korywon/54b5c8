@@ -31,17 +31,23 @@ def get_prospects_page(
 
 
 # TODO: Get progress on the file.
-@router.get("/prospects_files/{file_id}/progress")
+@router.get(
+    "/prospects_files/{file_id}/progress", response_model=schemas.FileProgressResponse
+)
 def get_prospects_file_progress(
     file_id: int,
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in"
-        )
-    return {"total": 0, "done": 0}
+    # TODO: Commented out for debugging. Uncomment this.
+    # if not current_user:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in"
+    #     )
+    # TODO: Remove hard-coded user ID.
+    progress = FileCrud.get_file_progress(db, 1, file_id)
+    # progress = FileCrud.get_file_progress(db, current_user.id, file_id)
+    return progress
 
 
 # TODO: Parse, validate, and import prospects.
