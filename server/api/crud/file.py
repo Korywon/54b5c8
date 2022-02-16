@@ -2,7 +2,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import func
 from api import schemas
 from api.models import File
-
+from typing import Union
 
 class FileCrud:
     @classmethod
@@ -36,9 +36,12 @@ class FileCrud:
     @classmethod
     def get_file_progress(
         cls, db: Session, user_id: int, file_id: int
-    ) -> schemas.FileProgressResponse:
+    ) -> Union[schemas.FileProgressResponse, None]:
         file = cls.get_file(db, user_id, file_id)
-        return schemas.FileProgressResponse(total=file.total_rows, done=file.done_rows)
+        if file:
+            return schemas.FileProgressResponse(total=file.total_rows, done=file.done_rows)
+        else:
+            None
 
     @classmethod
     def update_file_progress(cls, db: Session, user_id: int, file_id: int):
