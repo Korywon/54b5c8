@@ -129,12 +129,12 @@ async def import_prospects_file(
 
     # Time to rock and roll... parse the CSV.
     for i, row in enumerate(csv_rows):
-        # Update the rows done in the database.
-        FileCrud.update_file_progress(db, current_user.id, current_file.id)
-
         # Skip header row.
         if not i and has_headers:
             continue
+
+        # Update the rows done in the database.
+        FileCrud.update_file_progress(db, current_user.id, current_file.id)
 
         # Skip any rows if the indexes are out of range.
         num_col = len(row)
