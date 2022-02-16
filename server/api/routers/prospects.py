@@ -186,4 +186,9 @@ def import_prospects_file(
         FileCrud.update_file_progress(db, 1, current_file.id)
         # FileCrud.update_file_progress(db, current_user.id, current_file.id)
 
+    # Update the finished date time of file.
+    # TODO: Remove hard-coded user ID.
+    FileCrud.update_file_done_at(db, 1, current_file.id)
+    # FileCrud.update_file_finished(db, current_user.id, current_file.id)
+
     return summary
