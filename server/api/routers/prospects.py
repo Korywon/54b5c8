@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile
 from sqlalchemy.orm.session import Session
-from pydantic.networks import EmailStr
+from email_validator import validate_email, EmailNotValidError
 from api import schemas
 from api.dependencies.auth import get_current_user
 from api.core.constants import DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_IMPORT_FILE_SIZE
@@ -134,14 +134,16 @@ def import_prospects_file(
             summary["skipped"] += 1
             continue
 
-        email = ""
+        email = row[email_index]
         first_name = ""
         last_name = ""
 
-        # TODO: This validation logic doesn't work! Fix it.
+        # Attempt to validate the email.
         try:
-            email = EmailStr(row[email_index])
-        except:
+            valid = validate_email(email)
+            email = valid.email
+        except EmailNotValidError as e:
+            print(f"{i}/{num_rows} SKIPPED")
             summary["skipped"] += 1
             continue
 
@@ -168,6 +170,7 @@ def import_prospects_file(
             ProspectCrud.create_prospect(db, current_user.id, email)
             summary["created"] += 1
         else:
+            print(f"{i}/{num_rows} SKIPPED")
             summary["skipped"] += 1
 
         # Update the rows done in the database.
