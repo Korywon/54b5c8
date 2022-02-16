@@ -23,7 +23,7 @@ class File(Base):
     user = relationship("User", back_populates="files", foreign_keys=[user_id])
 
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
-    finished_at = Column(DateTime(timezone=True), nullable=True)
+    done_at = Column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self):
         return f"{self.id} | {self.filename}"

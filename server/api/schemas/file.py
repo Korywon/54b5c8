@@ -10,7 +10,7 @@ class File(BaseModel):
     total_rows: int
     done_rows: int
     uploaded_at: datetime
-    finished_at: datetime
+    done_at: datetime
 
     class Config:
         orm_mode = True
