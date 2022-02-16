@@ -4,7 +4,7 @@ from pydantic.networks import EmailStr
 from api import schemas
 from api.dependencies.auth import get_current_user
 from api.core.constants import DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_IMPORT_FILE_SIZE
-from api.crud import ProspectCrud
+from api.crud import ProspectCrud, FileCrud
 from api.dependencies.db import get_db
 import csv
 import codecs
@@ -102,6 +102,23 @@ def import_prospects_file(
             detail=f"File size cannot exceed {MAX_IMPORT_FILE_SIZE} bytes",
         )
 
+    # Create file entry in database.
+    # TODO: Remove hardcoded user ID.
+    current_file = FileCrud.create_file(
+        db,
+        # current_user.id,
+        1,
+        {
+            "filename": file.filename,
+            "file_size": file_size_bytes,
+            "total_rows": num_rows,
+        },
+    )
+
+    print(f"{current_file.id}")
+    match = FileCrud.get_file(db, 1, current_file.id)
+    print(f"{match.id} {match.user_id}")
+
     # Response payload describing summary of the import.
     summary = {
         "total": num_rows,
@@ -146,24 +163,27 @@ def import_prospects_file(
             "last_name": last_name,
         }
 
-        # TODO: Debug prints. Remove this.
-        # print(f"{i}/{num_rows} {email} {first_name} {last_name}", end=" ")
-
+        # TODO: Remove hard-coded user ID.
         exists = ProspectCrud.prospect_exists(db, 1, email)
+        # exists = ProspectCrud.prospect_exists(db, current_user.id, email)
 
         # Only update if forcing and entry exists.
-        # TODO: Remove debug prints.
+        # TODO: Remove hard-coded user ID.
         if force and exists:
-            # print(f"UPDATED")
             ProspectCrud.update_prospect(db, 1, prospect)
+            # ProspectCrud.create_prospect(db, current_user.id, email)
             summary["updated"] += 1
         # Only create prospects if we don't have an existing prospect.
         elif not exists:
-            # print(f"CREATED")
             ProspectCrud.create_prospect(db, 1, prospect)
+            # ProspectCrud.create_prospect(db, current_user.id, email)
             summary["created"] += 1
         else:
-            # print(f"SKIPPED")
             summary["skipped"] += 1
+
+        # Update the rows done in the database.
+        # TODO: Remove hard-coded user ID.
+        FileCrud.update_file_progress(db, 1, current_file.id)
+        # FileCrud.update_file_progress(db, current_user.id, current_file.id)
 
     return summary
