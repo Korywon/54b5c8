@@ -39,14 +39,11 @@ def get_prospects_file_progress(
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # TODO: Commented out for debugging. Uncomment this.
-    # if not current_user:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in"
-    #     )
-    # TODO: Remove hard-coded user ID.
-    progress = FileCrud.get_file_progress(db, 1, file_id)
-    # progress = FileCrud.get_file_progress(db, current_user.id, file_id)
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in"
+        )
+    progress = FileCrud.get_file_progress(db, current_user.id, file_id)
     return progress
 
 
@@ -62,11 +59,10 @@ def import_prospects_file(
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # TODO: Commented out for debugging. Uncomment this.
-    # if not current_user:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in"
-    #     )
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Please log in"
+        )
 
     # Holds the different indexes. Will be used to find duplicates.
     indexes = [email_index]
@@ -109,21 +105,15 @@ def import_prospects_file(
         )
 
     # Create file entry in database.
-    # TODO: Remove hardcoded user ID.
     current_file = FileCrud.create_file(
         db,
-        # current_user.id,
-        1,
+        current_user.id,
         {
             "filename": file.filename,
             "file_size": file_size_bytes,
             "total_rows": num_rows,
         },
     )
-
-    print(f"{current_file.id}")
-    match = FileCrud.get_file(db, 1, current_file.id)
-    print(f"{match.id} {match.user_id}")
 
     # Response payload describing summary of the import.
     summary = {
@@ -169,32 +159,23 @@ def import_prospects_file(
             "last_name": last_name,
         }
 
-        # TODO: Remove hard-coded user ID.
-        exists = ProspectCrud.prospect_exists(db, 1, email)
-        # exists = ProspectCrud.prospect_exists(db, current_user.id, email)
+        exists = ProspectCrud.prospect_exists(db, current_user.id, email)
 
         # Only update if forcing and entry exists.
-        # TODO: Remove hard-coded user ID.
-        if force and exists:
-            ProspectCrud.update_prospect(db, 1, prospect)
-            # ProspectCrud.create_prospect(db, current_user.id, email)
-            summary["updated"] += 1
         # Only create prospects if we don't have an existing prospect.
+        if force and exists:
+            ProspectCrud.update_prospect(db, current_user.id, email)
+            summary["updated"] += 1
         elif not exists:
-            ProspectCrud.create_prospect(db, 1, prospect)
-            # ProspectCrud.create_prospect(db, current_user.id, email)
+            ProspectCrud.create_prospect(db, current_user.id, email)
             summary["created"] += 1
         else:
             summary["skipped"] += 1
 
         # Update the rows done in the database.
-        # TODO: Remove hard-coded user ID.
-        FileCrud.update_file_progress(db, 1, current_file.id)
-        # FileCrud.update_file_progress(db, current_user.id, current_file.id)
+        FileCrud.update_file_progress(db, current_user.id, current_file.id)
 
     # Update the finished date time of file.
-    # TODO: Remove hard-coded user ID.
-    FileCrud.update_file_done_at(db, 1, current_file.id)
-    # FileCrud.update_file_finished(db, current_user.id, current_file.id)
+    FileCrud.update_file_done_at(db, current_user.id, current_file.id)
 
     return summary
