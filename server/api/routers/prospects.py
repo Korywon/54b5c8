@@ -161,13 +161,13 @@ def import_prospects_file(
         # Only update if forcing and entry exists.
         # Only create prospects if we don't have an existing prospect.
         if force and exists:
-            ProspectCrud.update_prospect(db, current_user.id, email)
+            ProspectCrud.update_prospect(db, current_user.id, prospect)
             summary["updated"] += 1
         elif not exists:
-            ProspectCrud.create_prospect(db, current_user.id, email)
+            ProspectCrud.create_prospect(db, current_user.id, prospect)
             summary["created"] += 1
         else:
-            print(f"{i}/{num_rows} SKIPPED")
+            print(f"{i}/{num_rows} {email} {first_name} {last_name} SKIPPED")
             summary["skipped"] += 1
 
         # Update the rows done in the database.
