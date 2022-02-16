@@ -22,6 +22,6 @@ class FileCreate(BaseModel):
     total_rows: int
 
 
-class FileProgress(BaseModel):
-    total_rows: int
-    done_rows: int
+class FileProgressResponse(BaseModel):
+    total: int
+    done: int
