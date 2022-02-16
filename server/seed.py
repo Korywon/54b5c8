@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.functions import func
 from api.dependencies.db import get_db
 from api.core.security import get_password_hash
 from api.models import User, Prospect, Campaign, CampaignProspect, File
 
 from random import randint
+from datetime import timedelta
 
 
 def seed_data(db: Session):
@@ -33,12 +35,14 @@ def seed_data(db: Session):
 
     for i in range(10):
         num_rows = randint(10, 100000)
-        size = num_rows * randint(8, 1024)
+        file_size = num_rows * randint(8, 1024)
+        done_at = func.now() + timedelta(milliseconds=(num_rows * randint(1, 10)))
         file = File(
             filename=f"file{i}",
             total_rows=num_rows,
             done_rows=num_rows,
-            file_size=size,
+            file_size=file_size,
+            done_at=done_at,
             user=user1,
         )
         db.add(file)
