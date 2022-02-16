@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from sqlalchemy.orm.session import Session
 from api.dependencies.db import get_db
 from api.core.security import get_password_hash
