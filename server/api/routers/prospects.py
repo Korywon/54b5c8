@@ -48,7 +48,7 @@ def get_prospects_file_progress(
 
 
 @router.post("/prospect_files/import", response_model=schemas.ProspectImportResponse)
-def import_prospects_file(
+async def import_prospects_file(
     email_index: int,
     file: UploadFile,
     first_name_index: int = None,
