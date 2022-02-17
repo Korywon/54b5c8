@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -25,3 +26,4 @@ class FileCreate(BaseModel):
 class FileProgressResponse(BaseModel):
     total: int
     done: int
+    done_at: Union[datetime, None]

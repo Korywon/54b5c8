@@ -32,7 +32,7 @@ class ProspectResponse(BaseModel):
 
 
 class ProspectImportResponse(BaseModel):
-    created: int
-    skipped: int
+    file_id: int
+    filename: str
+    file_size: int
     total: int
-    updated: int

@@ -5,6 +5,7 @@ from api.dependencies.auth import get_current_user
 from api.core.constants import DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_IMPORT_FILE_SIZE
 from api.crud import ProspectCrud, FileCrud
 from api.dependencies.db import get_db
+import asyncio
 import csv
 import codecs
 import os
@@ -52,6 +53,74 @@ async def get_prospects_file_progress(
     return progress
 
 
+async def parse_prospects_csv_rows(
+    db: Session,
+    current_user: schemas.User,
+    current_file: schemas.File,
+    indexes: dict,
+    has_headers: bool,
+    force: bool,
+    csv_rows: list,
+):
+    # Time to rock and roll... parse the CSV.
+    for i, row in enumerate(csv_rows):
+        # Skip header row.
+        if not i and has_headers:
+            continue
+
+        # Skip any rows if the indexes are out of range.
+        num_col = len(row)
+        if any(idx >= num_col for idx in indexes.values()):
+            continue
+
+        email = row[indexes["email"]]
+        first_name = ""
+        last_name = ""
+
+        # Attempt to validate the email.
+        if not email_pattern.match(email):
+            print(f"{i}/{current_file.total_rows} {email} SKIPPED (bad email)")
+            continue
+
+        # Grab first and last name if we were given indexes.
+        if "first_name" in indexes:
+            first_name = row[indexes["first_name"]]
+        if "last_name" in indexes:
+            last_name = row[indexes["last_name"]]
+
+        # Holds new data for creating or updating a prospect.
+        prospect_data = {
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
+
+        prospect_found = ProspectCrud.get_user_prospect_email(
+            db, current_user.id, email
+        )
+
+        # Only update if forcing and entry exists.
+        # Only create prospects if we don't have an existing prospect.
+        if force and prospect_found:
+            ProspectCrud.update_prospect(db, current_user.id, prospect_data)
+        elif not prospect_found:
+            prospect_found = ProspectCrud.create_prospect(
+                db, current_user.id, prospect_data
+            )
+        else:
+            print(
+                f"{i}/{current_file.total_rows} {email} SKIPPED (nonexistent prospect)"
+            )
+            continue
+
+        ProspectCrud.update_prospect_file(
+            db, current_user.id, prospect_found.id, current_file.id
+        )
+
+    # Update the finished date time of file.
+    FileCrud.update_file_done_at(db, current_user.id, current_file.id)
+
+
 @router.post("/prospect_files/import", response_model=schemas.ProspectImportResponse)
 async def import_prospects_file(
     email_index: int,
@@ -69,13 +138,13 @@ async def import_prospects_file(
         )
 
     # Holds the different indexes. Will be used to find duplicates.
-    indexes = [email_index]
+    indexes = {"email": email_index}
 
     # Only add indexes if they are not the default.
     if first_name_index != None:
-        indexes.append(first_name_index)
+        indexes["first_name"] = first_name_index
     if last_name_index != None:
-        indexes.append(last_name_index)
+        indexes["last_name"] = last_name_index
 
     # The set of indexes should be the same as the list of indexes. If they are
     # not the same, that indicates we have duplicates.
@@ -86,7 +155,7 @@ async def import_prospects_file(
         )
 
     # Check if any of the indexes are less than zero.
-    if any(idx < 0 for idx in indexes):
+    if any(idx < 0 for idx in indexes.values()):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Indexes cannot be below 0",
@@ -119,67 +188,17 @@ async def import_prospects_file(
         },
     )
 
+    # Create an asynchronous task to do in the background.
+    asyncio.get_event_loop().create_task(
+        parse_prospects_csv_rows(
+            db, current_user, current_file, indexes, has_headers, force, csv_rows
+        )
+    )
+
     # Response payload describing summary of the import.
-    summary = {
-        "total": num_rows,
-        "skipped": 0,
-        "created": 0,
-        "updated": 0,
-    }
-
-    # Time to rock and roll... parse the CSV.
-    for i, row in enumerate(csv_rows):
-        # Skip header row.
-        if not i and has_headers:
-            continue
-
-        # Skip any rows if the indexes are out of range.
-        num_col = len(row)
-        if any(idx >= num_col for idx in indexes):
-            summary["skipped"] += 1
-            continue
-
-        email = row[email_index]
-        first_name = ""
-        last_name = ""
-
-        # Attempt to validate the email.
-        if not email_pattern.match(email):
-            print(f"{i}/{num_rows} {email} SKIPPED (bad email)")
-            summary["skipped"] += 1
-            continue
-
-        # Grab first and last name if we were given indexes.
-        if first_name_index != None:
-            first_name = row[first_name_index]
-        if last_name_index != None:
-            last_name = row[last_name_index]
-
-        # Holds new data for creating or updating a prospect.
-        prospect_data = {
-            "email": email,
-            "first_name": first_name,
-            "last_name": last_name,
-        }
-
-        prospect_found = ProspectCrud.get_user_prospect_email(db, current_user.id, email)
-
-        # Only update if forcing and entry exists.
-        # Only create prospects if we don't have an existing prospect.
-        if force and prospect_found:
-            ProspectCrud.update_prospect(db, current_user.id, prospect_data)
-            summary["updated"] += 1
-        elif not prospect_found:
-            prospect_found = ProspectCrud.create_prospect(db, current_user.id, prospect_data)
-            summary["created"] += 1
-        else:
-            print(f"{i}/{num_rows} {email} SKIPPED (nonexistent prospect)")
-            summary["skipped"] += 1
-            continue
-
-        ProspectCrud.update_prospect_file(db, current_user.id, prospect_found.id, current_file.id)
-
-    # Update the finished date time of file.
-    FileCrud.update_file_done_at(db, current_user.id, current_file.id)
-
-    return summary
+    return schemas.ProspectImportResponse(
+        file_id=current_file.id,
+        filename=current_file.filename,
+        file_size=current_file.file_size,
+        total=num_rows,
+    )

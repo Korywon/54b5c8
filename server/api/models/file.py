@@ -3,7 +3,7 @@ from time import timezone
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import Column, ForeignKey
-from sqlalchemy.sql.sqltypes import BigInteger, DateTime, Integer, String
+from sqlalchemy.sql.sqltypes import BigInteger, Boolean, DateTime, Integer, String
 
 from api.database import Base
 

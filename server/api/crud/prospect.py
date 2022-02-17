@@ -57,7 +57,9 @@ class ProspectCrud:
         db.commit()
 
     @classmethod
-    def update_prospect_file(cls, db: Session, user_id: int, prospect_id: int, file_id: int):
+    def update_prospect_file(
+        cls, db: Session, user_id: int, prospect_id: int, file_id: int
+    ):
         prospect = (
             db.query(Prospect)
             .filter(Prospect.user_id == user_id)

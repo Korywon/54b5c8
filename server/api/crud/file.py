@@ -45,7 +45,10 @@ class FileCrud:
                 .filter(Prospect.file_id == file_id)
                 .count()
             )
-            return schemas.FileProgressResponse(total=file.total_rows, done=done_rows)
+
+            return schemas.FileProgressResponse(
+                total=file.total_rows, done=done_rows, done_at=file.done_at
+            )
 
         return None
 
