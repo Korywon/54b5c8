@@ -77,9 +77,8 @@ async def parse_prospects_csv_rows(
         first_name = ""
         last_name = ""
 
-        # Attempt to validate the email.
+        # Attempt to validate the email. Skip if invalid.
         if not email_pattern.match(email):
-            print(f"{i}/{current_file.total_rows} {email} SKIPPED (bad email)")
             continue
 
         # Grab first and last name if we were given indexes.
@@ -101,6 +100,7 @@ async def parse_prospects_csv_rows(
 
         # Only update if forcing and entry exists.
         # Only create prospects if we don't have an existing prospect.
+        # Skip if there is already an existing project and not forcing.
         if force and prospect_found:
             ProspectCrud.update_prospect(db, current_user.id, prospect_data)
         elif not prospect_found:
@@ -108,9 +108,6 @@ async def parse_prospects_csv_rows(
                 db, current_user.id, prospect_data
             )
         else:
-            print(
-                f"{i}/{current_file.total_rows} {email} SKIPPED (nonexistent prospect)"
-            )
             continue
 
         ProspectCrud.update_prospect_file(
