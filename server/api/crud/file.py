@@ -38,19 +38,18 @@ class FileCrud:
         cls, db: Session, user_id: int, file_id: int
     ) -> Union[schemas.FileProgressResponse, None]:
         file = cls.get_file(db, user_id, file_id)
-        if file:
-            done_rows = (
-                db.query(Prospect)
-                .filter(Prospect.user_id == user_id)
-                .filter(Prospect.file_id == file_id)
-                .count()
-            )
+        if not file:
+            return None
+         done_rows = (
+               db.query(Prospect)
+               .filter(Prospect.user_id == user_id)
+               .filter(Prospect.file_id == file_id)
+               .count()
+         )
 
-            return schemas.FileProgressResponse(
-                total=file.total_rows, done=done_rows, done_at=file.done_at
-            )
-
-        return None
+         return schemas.FileProgressResponse(
+               total=file.total_rows, done=done_rows, done_at=file.done_at
+         )
 
     @classmethod
     def update_file_done_at(cls, db: Session, user_id: int, file_id: int):
