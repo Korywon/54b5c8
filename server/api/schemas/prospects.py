@@ -29,3 +29,10 @@ class ProspectResponse(BaseModel):
     prospects: List[Prospect]
     size: int
     total: int
+
+
+class ProspectImportResponse(BaseModel):
+    file_id: int
+    filename: str
+    file_size: int
+    total: int

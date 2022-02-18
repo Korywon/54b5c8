@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import sqlalchemy
 
 from dotenv import dotenv_values
@@ -37,6 +39,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        reload=True,
         port=3001,
+        workers=8,
     )
